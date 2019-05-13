@@ -1,0 +1,112 @@
+﻿@page "/upload"
+@using System.IO;
+@using System.Threading.Tasks;
+@using System.Linq;
+@using System.Collections.Generic;
+@using BlazorFileSaver
+@using global::Blazor.FileReader
+@using Microsoft.AspNetCore.Components
+@using UtaFormatix
+
+@inject IFileReaderService fileReaderService;
+@inject IBlazorFileSaver blazorFileSaver;
+<h1>Convert</h1>
+
+<div class="alert alert-info" role="alert">
+    @Hint
+</div>
+<input type="file" ref="inputTypeFileElement" />
+<button class="btn btn-primary" onclick="@ReadFile">Upload</button><p/>
+<div class="btn-group" role="group" aria-label="ConvertOptions">
+    <button type="button" class="btn btn-secondary" onclick="@(() => Convert(UtaFormat.Vsq4))">To VSQX</button>
+    <button type="button" class="btn btn-secondary" onclick="@(() => Convert(UtaFormat.Ccs))">To CCS</button>
+    @*<button type="button" class="btn btn-secondary">To UST</button>*@
+</div>
+@functions {
+    ElementRef inputTypeFileElement;
+    string Hint { get; set; } = "Please upload your project file (.vsqx/.ccs/.ust).";
+    Data Converter { get; set; }
+
+    public async Task Convert(UtaFormat format)
+    {
+        switch (format)
+        {
+            case UtaFormat.Vsq4:
+                var outVsq = Converter.ExportVsq4();
+                await Save(Path.ChangeExtension(Converter.ProjectName, ".vsqx"), outVsq);
+                return;
+            case UtaFormat.Ccs:
+                var outCcs = Converter.ExportCcs();
+                await Save(Path.ChangeExtension(Converter.ProjectName, ".ccs"), outCcs);
+                return;
+            default:
+                Hint = "Can not convert your file.";
+                StateHasChanged();
+                return;
+        }
+    }
+
+    private async Task Save(string name, string data)
+    {
+        await blazorFileSaver.SaveAs(name, data, "text/xml");
+    }
+
+    private async Task Save(string name, byte[] data)
+    {
+        await blazorFileSaver.SaveAsBase64(name,System.Convert.ToBase64String(data), "application/octet-stream");
+    }
+
+    public async Task ReadFile()
+    {
+        var file = (await fileReaderService.CreateReference(inputTypeFileElement).EnumerateFilesAsync()).First();
+        var info = await file.ReadFileInfoAsync();
+        Converter = new Data();
+        try
+        {
+            using (var stream = await file.CreateMemoryStreamAsync(4096))
+            {
+                var name = info.Name.ToLowerInvariant();
+                if (name.EndsWith(".vsqx"))
+                {
+                    Converter.ImportVsqx(stream, info.Name);
+                    Hint = "VSQX loaded!";
+                }
+                else if (name.EndsWith(".ccs"))
+                {
+                    Converter.ImportCcs(stream, info.Name);
+                    Hint = "CCS loaded!";
+                }
+                else
+                {
+                    Hint = "The file you selected is not supported.";
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            Hint = "Error occured...";
+        }
+        StateHasChanged();
+
+    /*
+foreach (var file in await fileReaderService.CreateReference(inputTypeFileElement).EnumerateFilesAsync())
+{
+    // Read into buffer and act (uses less memory)
+    using (Stream stream = await file.OpenReadAsync())
+    {
+        // Do (async) stuff with stream...
+        await stream.ReadAsync(buffer, ...);
+        // The following will fail. Only async read is allowed.
+        //stream.Read(buffer, ...)
+    }
+
+    // Read into memory and act
+    using (MemoryStream memoryStream = await file.CreateMemoryStreamAsync(4096))
+    {
+        // Sync calls are ok once file is in memory
+        memoryStream.Read(buffer, ...)
+    }
+}
+*/
+    }
+}
