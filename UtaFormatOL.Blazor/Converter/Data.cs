@@ -729,7 +729,7 @@ namespace UtaFormatix
                 toBeRemovedTrack?.Remove();
                 toBeRemovedUnit?.Remove();
             }
-            return vsq.ToString();
+            return vsq.ToXmlString();
         }
         public string ExportCcs()
         {
@@ -840,7 +840,7 @@ namespace UtaFormatix
             }
             toBeRemovedUnit.Remove();
             toBeRemovedGroup.Remove();
-            return ccs.ToString();
+            return ccs.ToXmlString();
         }
     }
 }

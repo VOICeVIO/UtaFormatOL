@@ -39,6 +39,7 @@
                 var outCcs = Converter.ExportCcs();
                 await Save(Path.ChangeExtension(Converter.ProjectName, ".ccs"), outCcs);
                 return;
+            case UtaFormat.Ust:
             default:
                 Hint = "Can not convert your file.";
                 StateHasChanged();
@@ -46,9 +47,9 @@
         }
     }
 
-    private async Task Save(string name, string data)
+    private async Task Save(string name, string data, string type = "text/xml")
     {
-        await blazorFileSaver.SaveAs(name, data, "text/xml");
+        await blazorFileSaver.SaveAs(name, data, type);
     }
 
     private async Task Save(string name, byte[] data)
@@ -88,25 +89,25 @@
         }
         StateHasChanged();
 
-    /*
-foreach (var file in await fileReaderService.CreateReference(inputTypeFileElement).EnumerateFilesAsync())
-{
-    // Read into buffer and act (uses less memory)
-    using (Stream stream = await file.OpenReadAsync())
+        /*
+    foreach (var file in await fileReaderService.CreateReference(inputTypeFileElement).EnumerateFilesAsync())
     {
-        // Do (async) stuff with stream...
-        await stream.ReadAsync(buffer, ...);
-        // The following will fail. Only async read is allowed.
-        //stream.Read(buffer, ...)
-    }
+        // Read into buffer and act (uses less memory)
+        using (Stream stream = await file.OpenReadAsync())
+        {
+            // Do (async) stuff with stream...
+            await stream.ReadAsync(buffer, ...);
+            // The following will fail. Only async read is allowed.
+            //stream.Read(buffer, ...)
+        }
 
-    // Read into memory and act
-    using (MemoryStream memoryStream = await file.CreateMemoryStreamAsync(4096))
-    {
-        // Sync calls are ok once file is in memory
-        memoryStream.Read(buffer, ...)
+        // Read into memory and act
+        using (MemoryStream memoryStream = await file.CreateMemoryStreamAsync(4096))
+        {
+            // Sync calls are ok once file is in memory
+            memoryStream.Read(buffer, ...)
+        }
     }
-}
-*/
+    */
     }
 }
