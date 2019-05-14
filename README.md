@@ -9,4 +9,4 @@ CC BY-NC-SA 4.0
 
 ---
 
-by Ulysses from [VOICeVIO](https://github.com/VOICeVIO/)
+by Ulysses (from [VOICeVIO](https://github.com/VOICeVIO/)) and sdercolin
